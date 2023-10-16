@@ -1,0 +1,57 @@
+#!/bin/sh
+
+. /etc/os-release
+read -r kernel < /proc/sys/kernel/osrelease
+os=${NAME:-$ID-$VERSION_ID}
+read -r hn < /etc/hostname
+wm="${XDG_SESSION_DESKTOP}"
+mem=$(busybox.static free -m | awk '/^Mem:/ {print $3 "MiB / " $2 "MiB"}')
+st=$(btrfs filesystem df / | awk -F'=' 'NR==1{printf $3}') # btrfs
+dt=$(date +%H:%M)
+if [ -f /var/lib/scratchpkg/db/sysvinit ]
+then
+    init=sysV
+else
+    init=$(readlink /sbin/init)
+fi
+### pkg
+case "$hn" in
+	*void*) 
+		pkg="$(xbps-query -l | wc -l) (xbps)" ;;
+	*venom*) 
+		pkg="$(ls /var/lib/scratchpkg/db | wc -l) (spkg)" ;;
+	*alpine*) 
+	    	pkg="$(apk info | wc -l) (apk)" ;;
+esac
+
+# colors
+
+blk='\e[0;30m' # Black - Regular
+red='\e[0;31m' # Red
+grn='\e[0;32m' # Green
+ylw='\e[0;33m' # Yellow
+blu='\e[0;34m' # Blue
+pur='\e[0;35m' # Purple
+cyn='\e[0;36m' # Cyan
+wht='\e[0;37m' # White
+rst='\e[0m'
+
+full() {
+cat <<EOF
+$(printf $pur)╭───────────────────────────────────╮$(printf $rst)
+    $(printf $pur) Distro $(printf $rst)	$(printf $grn)${os}$(printf $rst)
+    $(printf $pur) Hostname $(printf $rst) $(printf $grn)${hn##*-}$(printf $rst)		
+    $(printf $pur) Kernel $(printf $rst)	$(printf $grn)${kernel}$(printf $rst)
+    $(printf $pur) Init $(printf $rst)	$(printf $grn)${init##*/}$(printf $rst)
+    $(printf $pur) Size @ $(printf $rst)	$(printf $grn)${st} $(printf $rst)
+    $(printf $pur) Ram $(printf $rst)	$(printf $grn)${mem}$(printf $rst)
+    $(printf $pur) Pkgs $(printf $rst)	$(printf $grn)${pkg}$(printf $rst)
+    $(printf $pur) Shell $(printf $rst)	$(printf $grn)${SHELL##*/}$(printf $rst)
+    $(printf $pur) Term $(printf $rst)	$(printf $grn)${TERM%-*}$(printf $rst)
+    $(printf $pur) WM $(printf $rst)	$(printf $grn)${wm%-*}$(printf $rst)
+    $(printf $pur) Time $(printf $rst)	$(printf $grn)${dt}$(printf $rst)
+$(printf $grn)╰───────────────────────────────────╯$(printf $rst)
+EOF
+}
+
+full
