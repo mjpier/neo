@@ -1,0 +1,63 @@
+ $ cat .profile                                                                                           
+#!/bin/sh
+
+# Interactive mode only
+case $- in
+         *i*) ;;
+      *) return;;
+esac
+
+#BLK="04" CHR="04" DIR="04" EXE="00" REG="00" HARDLINK="00" SYMLINK="06" MISSING="00" ORPHAN="01" FIFO="0F" SOCK="0F" OTHER="02"
+#export NNN_FCOLORS='$BLK$CHR$DIR$EXE$REG$HARDLINK$SYMLINK$MISSING$ORPHAN$FIFO$SOCK$OTHER'
+
+# Export all vars
+set -o allexport
+
+# General env vars
+PATH="/home/luis/.local/bin:/sbin:/usr/sbin:$PATH" 
+LANG="es_ES.UTF-8"
+PAGER="less"                             
+EDITOR="vim"                             
+TERM="foot"             
+VISUAL="$EDITOR"                         
+BROWSER="firefox"
+READER="zathura"                         
+IMAGEVIEWER="imv"                      
+FILE="nnn"      
+#QT_ENABLE_HIGHDPI_SCALING=1
+#APULSE_CAPTURE_DEVICE="plughw:0,0"      
+#APULSE_PLAYBACK_DEVICE="plughw:0,0"     
+#ENV=$HOME/.kshrc
+
+# NNN 
+## Nord theme
+## Env vars
+NNN_OPENER="xdg-open"
+NNN_FALLBACK_OPENER="xdg-open"           # File opener
+NNN_OPTS="deU"                    # NNN options
+NNN_BMS="g:~/Git"                        # Bookmarks
+NNN_PLUG="n:nuke;p:preview-tabbed"       # Plugins
+NNN_USE_EDITOR=1                         # Use $EDITOR on open text files
+NNN_COLORS="7777"                        # Colors for tabs
+NNN_TRASH=2                              # Move files to trash
+NNN_READER="zathura"                     # Documents reader
+NNN_FIFO=/tmp/nnn.fifo                   # Preview pluggin
+NNN_ARCHIVE="\\.(7z|a|ace|alz|arc|arj|bz|bz2|cab|cpio|deb|gz|jar|lha|lz|lzh|lzma|lzo|rar|rpm|rz|t7z|tar|tbz|tbz2|tgz|tlz|txz|tZ|tzo|war|xpi|xz|Z|zip)$"
+
+# D-Bus session active
+[ -z "$DBUS_SESSION_BUS_ADDRESS" ] && eval $(dbus-launch --sh-syntax --exit-with-session)
+
+# XDG_RUNTIME_DIR 
+unset XDG_RUNTIME_DIR
+XDG_RUNTIME_DIR=$(mktemp -d /tmp/$(id -u)-runtime-dir.XXX)
+
+# Autologin sway tty1
+if [ -z "$DISPLAY" ] && [ "$(tty)" = "/dev/tty1" ]; then
+  #exec startx
+  exec seatd-launch sway
+fi
+
+# Autologin dwl tty2
+if [ -z "$DISPLAY" ] && [ "$(tty)" = "/dev/tty2" ]; then
+  exec seatd-launch dwl
+fi
